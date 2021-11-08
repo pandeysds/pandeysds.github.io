@@ -1,0 +1,325 @@
+---
+title: 'Case Study 1: Beers and Breweries'
+author: "Shikha Pandey"
+date: "October 6, 2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading Libraries and setting the theme for plots
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(ggplot2)
+library(stringi)
+library(stringr)
+library(naniar)
+library(maps)
+library(mapproj)
+library(mice) #mice
+library(class) #knn
+library(caret) #confusionMatrix
+library(e1071) #Naive Bayes
+theme_set(theme_classic()) #Set the theme for plots
+```
+
+## Read in both Beer and Brewery files related to this case study.
+```{r}
+#Read in data from Beers.csv
+Beers = read.csv(file.choose(),header = TRUE, na.strings = c(""," ","NA"))
+#Read in data from Breweries.csv
+Breweries = read.csv(file.choose(),header = TRUE, na.strings = c(""," ","NA"))
+Breweries$State = as.factor(str_remove_all(Breweries$State, "\\s")) #Remove space preceeding State
+```
+```{r}
+dim(Beers)
+#Beer data has 2410 observations and 7 columns:
+
+#1. Name: Name of the beer
+#2. Beer_ID: Unique identifier of the beer
+#3. ABV: Alcohol by volume of the beer
+#4. IBU: International Bitterness Units of the beer
+#5. Brewery_id: Brewery identifier associated with the beer
+#6. Style: Style of the beer
+#7. Ounces: Ounces of the beer
+```
+```{r}
+dim(Breweries)
+#Breweries data has 558 observations and 4 columns:
+
+#1. Brew_ID: Unique identifier of the brewery
+#2. Name: Name of the brewery
+#3. City: City where brewery is located
+#4. State: U.S. State where brewery is located
+```
+
+##1. Number of breweries present in each state.
+```{r}
+#Number of breweries by state
+Breweries %>% group_by(State) %>% summarize(Count = n()) %>% arrange(desc(Count)) %>% print(n=Inf)
+
+#Plot the map of all States in dataset with gradient color based on count of breweries
+lookup = data.frame(State_Cd = state.abb, State = state.name) #makes a data frame with State name and state code
+colnames(Breweries)[4] = "State_Cd" # Change Column Name
+Breweries2 = merge(Breweries,lookup,"State_Cd") #make one dataset with state names and abb
+BreweriesMapData = count(Breweries2,State) #count up the occurance of each state. 
+colnames(BreweriesMapData)[2] = "Count" #change "n" to "Count"
+BreweriesMapData$region <- tolower(BreweriesMapData$State)
+BreweriesMapData2 = BreweriesMapData[-1]
+states <- map_data("state")
+map.df <- merge(states,BreweriesMapData2, by="region", all.x=T)
+map.df <- map.df[order(map.df$order),]
+Num_pos <- data.frame(region=tolower(state.name), long=state.center$x, lat=state.center$y)
+Num_pos <- merge(Num_pos, BreweriesMapData2, by="region", all.x = TRUE)
+#Plot
+ggplot(map.df, aes(x=long,y=lat))+
+  geom_polygon(aes(group=group, fill=Count),colour="white")+
+  geom_text(data=Num_pos, aes(long, lat, label=Count)) +
+  scale_fill_gradient(low = "lightsteelblue1",
+                      high = "Orange",
+                      guide = "colourbar")+
+  ggtitle("Number of Breweries in each State") +
+  coord_map()
+#There are total 558 breweries in the US. CO has the most with 47 breweries. DC, ND, SD and WV are at the bottom with 1 brewery each.
+```
+
+##2.	Merge beer data with the breweries data. First 6 observations and the last 6 observations printed to check the merged file.
+```{r}
+#Merge the data frames for Beers and Breweries
+Budweiser = merge(Beers,Breweries, by.x = "Brewery_id", by.y = "Brew_ID")
+#Assigning new names to the columns of the data frame
+colnames(Budweiser) <- c('Brewery_ID','Beer','Beer_ID', 'ABV', 'IBU', 'Style', 'Ounces', 'Brewery', 'City', 'State')
+#Rearranging columns in data frame
+Budweiser = Budweiser %>% select(Brewery_ID, Brewery, Beer_ID, Beer, ABV, IBU, Style, Ounces, City, State)
+str(Budweiser)
+#First 6 observations of merged dataset
+head(Budweiser)
+#Last 6 observations of merged dataset
+tail(Budweiser)
+#After merging the beers and breweries datasets based on Brewery_ID from beers dataset and Brew_ID from breweries dataset, resulting dataset, Budweiser, now has 2410 observations with 10 columns.
+#Head of the dataset displays first 6 rows of data and tail of dataset displays last 6 rows of data from this merged dataset.
+```
+
+##3. Addressing the missing values in each column.
+```{r}
+#Looking for missing values in dataset
+gg_miss_var(Budweiser) + labs(title = 'Missing Values', x = 'Dataset Columns')
+sapply(Budweiser, function(x) sum(is.na(x)))
+#Missing values are found for IBU (1005), ABV (62) and Style (5). It is a significant number for IBU (41.7%), notable for ABV (2.57%) but insignificant for Style (0.2%), so, I decided to exclude the missing 'Style' data (5 rows) from Budweiser.
+```
+```{r}
+#Excluding missing data for 'Style'
+Budweiser = Budweiser %>% filter(!is.na(Style))
+sapply(Budweiser, function(x) sum(is.na(x)))
+#After excluding 5 rows of missing 'Style' data, I notice that missing IBU and ABV are 1002 and 59 respectively as compared to 1005 and 62 earlier.
+```
+```{r}
+#Assumption is that missing values of ABV and IBU are Missing At Random (MAR). Applying multiple imputation with function MICE() for ABV and IBU with covariant 'Style'.
+
+#Multiple imputation for missing values of ABV and IBU
+mice_mod <- mice(Budweiser[, c("IBU","Style")], method='pmm')
+mice_complete1 <- complete(mice_mod)
+
+mice_mod <- mice(Budweiser[, c("ABV","Style")], method='pmm')
+mice_complete2 <- complete(mice_mod)
+
+#Transfer the predicted missing values for ABV and IBU into the Budweiser dataset
+Budweiser$IBU = mice_complete1$IBU
+Budweiser$ABV = mice_complete2$ABV
+```
+```{r}
+#Looking for missing values in dataset after imputation, none found
+gg_miss_var(Budweiser) + labs(title = 'Missing Values', x = 'Dataset Columns')
+sapply(Budweiser, function(x) sum(is.na(x)))
+#With these imputed values, dataset is now complete with no more missing values.
+```
+
+##4. Median alcohol content and international bitterness unit for each state. Bar chart plots to compare.
+```{r}
+#Median acohol content and international bitterness unit for each state
+Budweiser %>% group_by(State) %>% summarize(medianABV = median(ABV), medianIBU = median(IBU), Count = n()) %>% print(n=Inf)
+
+##Plot a bar chart for median ABV for each State
+#Arrange (order) data by descending median ABV
+Budweiser_ABV = Budweiser %>% group_by(State) %>% summarize(medianABV = median(ABV), medianIBU = median(IBU), Count = n()) %>% arrange(desc(medianABV))
+#Reorder level of State factor based on descending median ABV
+Budweiser_ABV$State = factor(Budweiser_ABV$State, level = Budweiser_ABV$State[order(-Budweiser_ABV$medianABV)])
+
+#column plot of ordered results
+Budweiser_ABV %>% ggplot(aes(x = State, y = medianABV)) + geom_bar(stat="identity", width = 0.4, fill="tomato2") + labs(title = 'Median ABV by State', subtitle = 'Ordered highest to lowest', y = 'Median ABV') + theme(axis.text.x = element_text(angle=65, vjust=0.6))
+
+##Plot a bar chart for median IBU for each State
+#Arrange (order) data by descending median IBU
+Budweiser_IBU = Budweiser %>% group_by(State) %>% summarize(medianABV = median(ABV), medianIBU = median(IBU), Count = n()) %>% arrange(desc(medianIBU))
+#Reorder level of State factor based on descending median IBU
+Budweiser_IBU$State = factor(Budweiser_IBU$State, level = Budweiser_IBU$State[order(-Budweiser_IBU$medianIBU)])
+
+#column plot of ordered results
+Budweiser_IBU %>% ggplot(aes(x = State, y = medianIBU)) + geom_bar(stat="identity", width = 0.4, fill="tomato2") + labs(title = 'Median IBU by State', subtitle = 'Ordered highest to lowest', y = 'Median IBU') + theme(axis.text.x = element_text(angle=65, vjust=0.6))
+#Kentucky (KY) has the highest median alcohol content with 6.5% ABV and Utah (UT) has the lowest median alcohol content with 4% ABV.
+#Delaware (DE) has the highest median IBU with 66 units and Kansas (KS) has the lowest median IBU with 20 units.
+```
+
+##5. State with the maximum alcoholic (ABV) beer and with the most bitter (IBU) beer.
+```{r}
+#State with maximum alcoholic (ABV) beer
+Budweiser %>% select(State, ABV) %>% filter(ABV == max(Budweiser$ABV))
+
+#State with most bitter (IBU) beer
+Budweiser %>% select(State, IBU) %>% filter(IBU == max(Budweiser$IBU))
+
+#Plot the states on US map
+US_states <- map_data("state")
+colorado = US_states %>% filter(region == "colorado")
+Oregon = US_states %>% filter(region == "oregon")
+
+ggplot() + 
+  geom_polygon(data = US_states, aes(x = long, y = lat, group = group),colour="white", fill="grey40") +
+  geom_polygon(data = colorado, aes(x=long, y=lat, group = group), fill = "orange") +
+  geom_polygon(data = Oregon, aes(x=long, y=lat, group = group),fill = "lightsteelblue") +
+  coord_quickmap()
+#Colorado (CO) has the maximum alcoholic beer with 12.8% ABV.
+#Oregon (OR) has the most bitter beer with 138 units.
+```
+
+##6. Summary statistics and distribution of the ABV.
+```{r}
+#Summary statistics for ABV
+summary(Budweiser$ABV)
+#The lowest ABV is 0.1%, the highest is 12.8%. The Mean is 5.98% and the Median value is 5.6%.
+```
+```{r}
+#Plot to visualize the distribution
+Budweiser %>% ggplot(aes(x = ABV)) + geom_histogram(bins = 50, fill = "orange") + labs(title = 'AVB Distribution', x = 'Alcohol by Volume (ABV)', y = "Count of Beers") + geom_vline(xintercept = median(Budweiser$ABV), color ="lightsteelblue", size = 2) + geom_vline(xintercept = mean(Budweiser$ABV), color = "black", linetype = "dotted", size = 1)
+#Right skewedness for ABV indicates that more beers are produced with lesser alcohol by volume of the beer.
+```
+```{r}
+#AVB Distribution by Container
+Budweiser %>% ggplot(aes(x = as.factor(Ounces), y = ABV)) + geom_boxplot(fill = "orange") + labs(title = 'AVB Distribution by Container', x = 'Fluid Ounces', y = "Alcohol by Volume (ABV)")
+#There are only maybe a handful of beers that come in 8.4 ounce and 16.9 ounce sizes and looks like they are strong beers. However, the 12 ounce containers have the lowest ABV median.
+```
+
+##7. Relationship between the bitterness of the beer and its alcoholic content shown by a scatter plot.
+```{r}
+#Scatter plot between ABV and IBU
+Budweiser %>% ggplot(aes(x = ABV, y = IBU)) + geom_point() + geom_smooth(colour = "orange1") + labs(title = 'Relationship Between ABV and IBU', x = 'Alcohol by Volume (ABV)' , y = 'International Bitterness Unit (IBU)')
+#Plot doesn't show an apparent relationship between ABV and IBU. It doesn't show that ABV increases for a higher IBU or vice versa.
+```
+
+##8. KNN classification to investigate the difference with respect to IBU and ABV between IPAs (India Pale Ales) and other types of Ale.
+```{r}
+#Create a dataset only for beers with 'Ale' or 'IPA' in their name from the Budweiser dataset
+Budweiser_Ale = Budweiser %>% filter(str_detect(Style, "Ale") | str_detect(Style, "IPA"))
+
+#Identify and label these beers as 'IPA' or 'Other Ales' in a new column
+Budweiser_Ale = Budweiser_Ale %>% 
+  mutate(Style_Ale = case_when(
+    str_detect(Style, "India Pale Ale") | str_detect(Style, "IPA") ~ "IPA", 
+               TRUE ~ "Other Ales")) %>%
+  mutate(Style_Ale = factor(Style_Ale, levels = c("IPA", "Other Ales")))
+
+#Plot indicating beer type with their ABV and IBU
+Budweiser_Ale %>% ggplot(aes(x = ABV, y = IBU, color = Style_Ale)) + geom_point() + labs(title = 'Ale Type with IBU and ABV', color = 'Ale Type')
+#IPAs and Other Ales form clusters in terms of their ABV and IBU values.
+```
+
+```{r}
+#k-NN: Loop for many k and one training/test partition
+set.seed(7)     #Set the seed
+numks = 30      #Value for k (1 to 30)
+splitPerc = .70 #Training/Test split Percentage
+
+#Dataframe to store statistics - accuracy, sensitivity and specificity for each k value
+Ale_Stat = data.frame(accuracy = numeric(30), sensitivity = numeric(30), specificity = numeric(30), positive_class = character(30), k = numeric(30))
+
+trainIndices = sample(1:dim(Budweiser_Ale)[1],round(splitPerc * dim(Budweiser_Ale)[1]))
+train = Budweiser_Ale[trainIndices,]
+test = Budweiser_Ale[-trainIndices,] 
+
+for(i in 1:numks)
+{
+  classifications = knn(train[,c(5,6)],test[,c(5,6)],train$Style_Ale,prob = TRUE, k = i)
+  CM = confusionMatrix(table(classifications,test$Style_Ale))
+  CM
+  Ale_Stat$accuracy[i] = CM$overall[1]
+  Ale_Stat$sensitivity[i] = CM$byClass[1]
+  Ale_Stat$specificity[i] = CM$byClass[2]
+  Ale_Stat$positive_class = CM$positive
+  Ale_Stat$k[i] = i
+}
+
+#Reshape data frame from wide to long format
+Ale_ggp <- data.frame(x = Ale_Stat$k,
+                      y = c(Ale_Stat$accuracy, Ale_Stat$sensitivity, Ale_Stat$specificity),
+                      Statistic = c(rep("Accuracy", nrow(Ale_Stat)),
+                                rep("Sensitivity", nrow(Ale_Stat)),
+                                rep("Specificity", nrow(Ale_Stat))))
+
+#Plot the Statistics for k-value
+ggplot(Ale_ggp, aes(x, y, col = Statistic)) + geom_line() + labs(title = 'Statistics vs k-value', x = 'k-value' , y = 'Statistical Value') + scale_x_continuous(breaks = seq(0,30,5)) + scale_y_continuous(breaks = seq(0,.95,.02)) + theme_grey()
+
+#Find the k-value with maximum accuracy level
+Ale_Stat[which.max(Ale_Stat$accuracy),]
+
+#Mean Statistical values for k-values from 1 to 30
+mean(Ale_Stat$accuracy)
+mean(Ale_Stat$sensitivity)
+mean(Ale_Stat$specificity)
+#Based on ABV and IBU for the beers in this dataset, the Machine Learning k-NN Classification model classifies a beer with about 87% accuracy whether it's an IPA or other type of beer. The best k-value is 7 with highest accuracy of 89%, positive class as IPA.
+
+  classifications = knn(train[,c(5,6)],test[,c(5,6)],train$Style_Ale,prob = TRUE, k = 15)
+  CM = confusionMatrix(table(classifications,test$Style_Ale))
+  CM
+```
+
+#Naive Bayes
+```{r}
+#naiveBayes()
+model = naiveBayes(train[,c(5,6)],train$Style_Ale,laplace = 1)
+CM = confusionMatrix(table(predict(model,test[,c(5,6)]),test$Style_Ale))
+CM
+#Another Machine Learning Naive Bayes Classification model compares with the k-NN with providing about 85% accuracy and positive classification as IPA.
+```
+
+#9.1 Insight - Which top 10 cities have the most number of breweries?
+```{r}
+#Create another column in Breweries dataset with City, Sate combination
+Breweries$City_State = paste0(Breweries$City, ",", Breweries$State_Cd)
+
+#Top 10 cities with most breweries
+Breweries_Cty = Breweries %>% group_by(City_State) %>% summarize(Count = n()) %>% arrange(desc(Count)) %>% head(n=10)
+
+#Reorder level of City, State combo factor based on descending brewery count
+Breweries_Cty$City_State = factor(Breweries_Cty$City_State, level = Breweries_Cty$City_State [order(-Breweries_Cty$Count)])
+
+##Plot a bar chart for City, State combo for each State
+Breweries_Cty %>% ggplot(aes(x = City_State, y = Count)) + geom_bar(stat="identity", width = 0.5, fill="orange") + labs(title = 'Top 10 Cities with Most Breweries', x = 'City', y = 'Breweries') + scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+#Portland, OR came up top in the United States with 11 breweries and San Francisco, CA gets the 10th spot with 5 breweries. Boulder, CO, Chicago, IL and Seattle, WA tie with 9 breweries each.
+```
+
+#9.2 Insight - Which top 10 breweries produce the most number of beers?
+```{r}
+#Create another column in Budweiser dataset with Brewery, City, Sate combination
+Budweiser$Brew_Cty_State = paste0(Budweiser$Brewery," ",Budweiser$City,",", Budweiser$State)
+
+#Top 10 breweries that produce the most number of beers
+Budweiser_Brew = Budweiser %>% group_by(Brew_Cty_State) %>% summarize(Count = n()) %>% arrange(desc(Count)) %>% head(n=10)
+
+#Reorder level of City, State combo factor based on descending brewery count
+Budweiser_Brew$Brew_Cty_State = factor(Budweiser_Brew$Brew_Cty_State, level = Budweiser_Brew$Brew_Cty_State [order(-Budweiser_Brew$Count)])
+
+##Plot a bar chart for City, State combo for each State
+Budweiser_Brew %>% ggplot(aes(x = Brew_Cty_State, y = Count)) + geom_bar(stat="identity", width = 0.5, fill="orange") + labs(title = 'Top 10 Breweries with Most Beers', x = 'Brewery', y = 'Beers') + scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+#Brewery Vivant in Grand Rapids, MI came up top producing 62 unique beers and Bonfire Brewing Company in Eagle, CO claimed 10th spot with producing 19 different beers.
+```
+
+
+
