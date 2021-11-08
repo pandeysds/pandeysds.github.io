@@ -1,0 +1,12 @@
+---
+title: "About Me"
+author: "Shikha Pandey"
+date: "November 7, 2021"
+output: html_document
+---
+
+### My name is Shikha Pandey
+### I am from great country of India
+### I enjoy travelling and making friends
+### I work at Southern Methodist University in Dallas, TX
+### I completed Masters in Computer Applications from India and currently pursuing Masters in Data Science at SMU. 
