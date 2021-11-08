@@ -5,6 +5,6 @@ navbar:
     - text: "Home"
       href: index.html
     - text: "About Me"
-      href: About-Me.html
+      href: AboutMe.html
     - text: "Beer Case Study"
       href: Unit_8_Case_Study_01_Final.html
