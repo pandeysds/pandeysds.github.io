@@ -9,4 +9,4 @@ output: html_document
 ### I am from India
 ### I enjoy travelling and making friends
 ### I work at Southern Methodist University in Dallas, TX
-### I completed Masters in Computer Applications from India and now pursuing Masters in Data Science at SMU. 
+### I completed Masters in Computer Applications from India and now pursuing Masters in Data Science at SMU.
