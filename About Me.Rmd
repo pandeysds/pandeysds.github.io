@@ -8,5 +8,5 @@ output: html_document
 ### My name is Shikha Pandey
 ### I am from India
 ### I enjoy travelling and making friends
-### I work at Southern Methodist University (SMU) in Dallas, TX
+### I work at Southern Methodist University in Dallas, TX
 ### I completed Masters in Computer Applications from India and now pursuing Masters in Data Science at SMU.
