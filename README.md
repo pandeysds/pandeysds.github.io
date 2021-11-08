@@ -1,2 +1,2 @@
 # pandeysds.github.io
-Website to Deploy my analyses
+Website to Deploy my Analyses
