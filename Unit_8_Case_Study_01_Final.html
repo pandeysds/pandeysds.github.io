@@ -559,57 +559,57 @@ Budweiser %&gt;% group_by(State) %&gt;% summarize(medianABV = median(ABV), media
 <pre><code>## # A tibble: 51 x 4
 ##    State medianABV medianIBU Count
 ##    &lt;fct&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;int&gt;
-##  1 AK       0.056       35      25
+##  1 AK       0.056       40      25
 ##  2 AL       0.06        39.5    10
-##  3 AR       0.052       30       5
-##  4 AZ       0.055       22      46
+##  3 AR       0.052       29       5
+##  4 AZ       0.0565      25      46
 ##  5 CA       0.058       40     183
 ##  6 CO       0.06        35     263
-##  7 CT       0.06        35      27
-##  8 DC       0.0625      22.5     8
-##  9 DE       0.055       66       2
-## 10 FL       0.0565      38      58
-## 11 GA       0.055       39      16
-## 12 HI       0.054       24      27
-## 13 IA       0.0555      27.5    30
+##  7 CT       0.06        40      27
+##  8 DC       0.0625      25.5     8
+##  9 DE       0.05        63       2
+## 10 FL       0.0555      38      58
+## 11 GA       0.055       35.5    16
+## 12 HI       0.054       23      27
+## 13 IA       0.0555      25.5    30
 ## 14 ID       0.0565      35      30
-## 15 IL       0.058       36      91
-## 16 IN       0.058       33     139
+## 15 IL       0.058       35      91
+## 16 IN       0.058       35     139
 ## 17 KS       0.05        20      23
-## 18 KY       0.065       35      21
-## 19 LA       0.052       30      19
+## 18 KY       0.06        38      21
+## 19 LA       0.052       28      19
 ## 20 MA       0.054       30      82
-## 21 MD       0.058       28      21
-## 22 ME       0.051       35      27
-## 23 MI       0.06        35     162
-## 24 MN       0.056       43      55
-## 25 MO       0.053       25      42
+## 21 MD       0.058       36      21
+## 22 ME       0.051       30      27
+## 23 MI       0.062       30     162
+## 24 MN       0.056       44      55
+## 25 MO       0.052       28      42
 ## 26 MS       0.058       45      11
 ## 27 MT       0.0545      35      40
-## 28 NC       0.057       31      59
+## 28 NC       0.057       30      59
 ## 29 ND       0.05        32       3
-## 30 NE       0.056       35      25
-## 31 NH       0.055       16.5     8
+## 30 NE       0.055       30      25
+## 31 NH       0.055       22.5     8
 ## 32 NJ       0.046       34.5     8
-## 33 NM       0.061       37.5    14
-## 34 NV       0.062       40      11
+## 33 NM       0.061       52      14
+## 34 NV       0.061       42      11
 ## 35 NY       0.055       40      74
-## 36 OH       0.058       35      49
-## 37 OK       0.06        34      19
+## 36 OH       0.058       40      49
+## 37 OK       0.06        35      19
 ## 38 OR       0.056       35     125
-## 39 PA       0.0575      33     100
-## 40 RI       0.055       24      27
-## 41 SC       0.055       32.5    14
-## 42 SD       0.06        25       7
+## 39 PA       0.0575      29     100
+## 40 RI       0.055       27      27
+## 41 SC       0.055       35.5    14
+## 42 SD       0.06        30       7
 ## 43 TN       0.057       34.5     6
-## 44 TX       0.055       33.5   128
-## 45 UT       0.04        34.5    26
+## 44 TX       0.055       33     128
+## 45 UT       0.04        32      26
 ## 46 VA       0.0565      41      40
 ## 47 VT       0.055       42      27
 ## 48 WA       0.0555      35      68
 ## 49 WI       0.052       22      87
 ## 50 WV       0.062       57.5     2
-## 51 WY       0.05        21      15</code></pre>
+## 51 WY       0.05        25      15</code></pre>
 <pre class="r"><code>##Plot a bar chart for median ABV for each State
 #Arrange (order) data by descending median ABV
 Budweiser_ABV = Budweiser %&gt;% group_by(State) %&gt;% summarize(medianABV = median(ABV), medianIBU = median(IBU), Count = n()) %&gt;% arrange(desc(medianABV))
@@ -724,14 +724,14 @@ ggplot(Ale_ggp, aes(x, y, col = Statistic)) + geom_line() + labs(title = &#39;St
 <pre class="r"><code>#Find the k-value with maximum accuracy level
 Ale_Stat[which.max(Ale_Stat$accuracy),]</code></pre>
 <pre><code>##    accuracy sensitivity specificity positive_class k
-## 3 0.8782609        0.84   0.9017544            IPA 3</code></pre>
+## 6 0.8956522   0.8571429   0.9192982            IPA 6</code></pre>
 <pre class="r"><code>#Mean Statistical values for k-values from 1 to 30
 mean(Ale_Stat$accuracy)</code></pre>
-<pre><code>## [1] 0.861087</code></pre>
+<pre><code>## [1] 0.8716667</code></pre>
 <pre class="r"><code>mean(Ale_Stat$sensitivity)</code></pre>
-<pre><code>## [1] 0.8121905</code></pre>
+<pre><code>## [1] 0.816381</code></pre>
 <pre class="r"><code>mean(Ale_Stat$specificity)</code></pre>
-<pre><code>## [1] 0.8911111</code></pre>
+<pre><code>## [1] 0.905614</code></pre>
 <pre class="r"><code>#Based on ABV and IBU for the beers in this dataset, the Machine Learning k-NN Classification model classifies a beer with about 87% accuracy whether it&#39;s an IPA or other type of beer. The best k-value is 7 with highest accuracy of 89%, positive class as IPA.
 
   classifications = knn(train[,c(5,6)],test[,c(5,6)],train$Style_Ale,prob = TRUE, k = 15)
@@ -741,26 +741,26 @@ mean(Ale_Stat$accuracy)</code></pre>
 ## 
 ##                
 ## classifications IPA Other Ales
-##      IPA        137         26
-##      Other Ales  38        259
+##      IPA        142         22
+##      Other Ales  33        263
 ##                                           
-##                Accuracy : 0.8609          
-##                  95% CI : (0.8258, 0.8912)
+##                Accuracy : 0.8804          
+##                  95% CI : (0.8472, 0.9086)
 ##     No Information Rate : 0.6196          
 ##     P-Value [Acc &gt; NIR] : &lt;2e-16          
 ##                                           
-##                   Kappa : 0.7009          
+##                   Kappa : 0.7433          
 ##                                           
-##  Mcnemar&#39;s Test P-Value : 0.1691          
+##  Mcnemar&#39;s Test P-Value : 0.1775          
 ##                                           
-##             Sensitivity : 0.7829          
-##             Specificity : 0.9088          
-##          Pos Pred Value : 0.8405          
-##          Neg Pred Value : 0.8721          
+##             Sensitivity : 0.8114          
+##             Specificity : 0.9228          
+##          Pos Pred Value : 0.8659          
+##          Neg Pred Value : 0.8885          
 ##              Prevalence : 0.3804          
-##          Detection Rate : 0.2978          
-##    Detection Prevalence : 0.3543          
-##       Balanced Accuracy : 0.8458          
+##          Detection Rate : 0.3087          
+##    Detection Prevalence : 0.3565          
+##       Balanced Accuracy : 0.8671          
 ##                                           
 ##        &#39;Positive&#39; Class : IPA             
 ## </code></pre>
@@ -773,26 +773,26 @@ CM</code></pre>
 ## 
 ##             
 ##              IPA Other Ales
-##   IPA        135         27
-##   Other Ales  40        258
+##   IPA        133         29
+##   Other Ales  42        256
 ##                                           
-##                Accuracy : 0.8543          
-##                  95% CI : (0.8188, 0.8853)
+##                Accuracy : 0.8457          
+##                  95% CI : (0.8093, 0.8774)
 ##     No Information Rate : 0.6196          
 ##     P-Value [Acc &gt; NIR] : &lt;2e-16          
 ##                                           
-##                   Kappa : 0.6865          
+##                   Kappa : 0.6678          
 ##                                           
-##  Mcnemar&#39;s Test P-Value : 0.1426          
+##  Mcnemar&#39;s Test P-Value : 0.1544          
 ##                                           
-##             Sensitivity : 0.7714          
-##             Specificity : 0.9053          
-##          Pos Pred Value : 0.8333          
-##          Neg Pred Value : 0.8658          
+##             Sensitivity : 0.7600          
+##             Specificity : 0.8982          
+##          Pos Pred Value : 0.8210          
+##          Neg Pred Value : 0.8591          
 ##              Prevalence : 0.3804          
-##          Detection Rate : 0.2935          
+##          Detection Rate : 0.2891          
 ##    Detection Prevalence : 0.3522          
-##       Balanced Accuracy : 0.8383          
+##       Balanced Accuracy : 0.8291          
 ##                                           
 ##        &#39;Positive&#39; Class : IPA             
 ## </code></pre>
