@@ -1,15 +1,4 @@
-<<<<<<< HEAD
-name: "my-website"
-navbar:
-  title: "My Website"
-  left:
-    - text: "Home"
-      href: index.html
-    - text: "Introduction"
-      href: Introduction.html      
-    - text: "Beer Case Study"
-      href: Unit_8_Case_Study_01_Finale.html
-=======
+
 name: "my-website"
 navbar:
   title: "My Website"
@@ -20,4 +9,4 @@ navbar:
       href: Introduction.html      
     - text: "Beer Case Study"
       href: Unit_8_Case_Study_01_Final.html
->>>>>>> 8e8fe2d7afdf1647e5e01d12c777f35ee8e553ef
+
