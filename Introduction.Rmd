@@ -10,3 +10,20 @@ output: html_document
 ### I enjoy travelling and making friends
 ### I work at Southern Methodist University (SMU) in Dallas, TX
 ### I completed Masters in Computer Applications from India and now pursuing Masters in Data Science at SMU.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# The other tabs represent work/analyses that I have completed.  Please check them out!
