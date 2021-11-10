@@ -3,6 +3,8 @@ library(shiny)
 library(caret)
 library(ggplot2)
 library(tidyverse)
+library(e1071)
+
 
 # Define UI for data upload app ----
 ui <- fluidPage(
