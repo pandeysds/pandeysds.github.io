@@ -19,7 +19,7 @@ server <- function(input, output) {
     #plot the data
     credit %>% ggplot(aes(x = AGE, y = LIMIT_BAL,color = default.payment.next.month)) + geom_point()
     
-    #Create standardized variables for later. 
+    #Create standardized variables for later 
     credit$Z_Lim = (credit$LIMIT_BAL-mean(credit$LIMIT_BAL))/sd(credit$LIMIT_BAL)
     credit$Z_AGE = (credit$AGE-mean(credit$AGE))/sd(credit$AGE)
     

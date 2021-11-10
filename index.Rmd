@@ -5,7 +5,7 @@ date: "November 7, 2021"
 output: html_document
 ---
 
-# Website to deploy analyses for MSDS Projects by Shikha Pandey
+# Website to deploy analyses for MSDS Projects by Shikha Pandey.
 
 <a href = "https://pandeys.shinyapps.io/Budweiser/">Beer Analysis App</a>
 
