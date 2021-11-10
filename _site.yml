@@ -9,4 +9,6 @@ navbar:
       href: Introduction.html
     - text: "Beer Case Study"
       href: Unit_8_Case_Study_01_Final.html
+    - text: "CLT2"
+      href: CLT2.html
 
