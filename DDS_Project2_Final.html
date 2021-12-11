@@ -277,6 +277,7 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
+<li><a href="#introduction">Introduction</a></li>
 <li><a href="#load-libraries-and-set-color-scheme">Load Libraries and Set Color Scheme</a></li>
 <li><a href="#load-and-look-at-the-data">Load and look at the data</a></li>
 <li><a href="#employee-eda">Employee EDA</a>
@@ -312,34 +313,28 @@ $(document).ready(function () {
 <li><a href="#linear-regression">Linear Regression</a></li>
 </ul></li>
 </ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
 </ul>
 </div>
 
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>DDSAnalytics is an analytics company that specializes in talent management solutions for Fortune 100 companies. It is planning to leverage data science for talent management to gain a competitive edge over its competition. Their executive leadership has identified predicting employee turnover as its first application of data science for talent management and they have tasked our data science team to conduct an analysis of existing employee data.</p>
+<p>We have to use R on a given dataset to do a data analysis to identify factors that lead to attrition. Based on statistical analysis and evidence, we will identify the top three factors that contribute to turnover along with any other interesting trends and observations. We will also build models to predict attrition and salary.</p>
+</div>
 <div id="load-libraries-and-set-color-scheme" class="section level1">
 <h1>Load Libraries and Set Color Scheme</h1>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.6.3</code></pre>
-<pre><code>## Warning: package &#39;tibble&#39; was built under R version 3.6.3</code></pre>
-<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.6.3</code></pre>
-<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.6.3</code></pre>
-<pre><code>## Warning: package &#39;forcats&#39; was built under R version 3.6.3</code></pre>
-<pre class="r"><code>library(GGally)
-library(cowplot)</code></pre>
-<pre><code>## Warning: package &#39;cowplot&#39; was built under R version 3.6.3</code></pre>
-<pre class="r"><code>library(class)</code></pre>
-<pre><code>## Warning: package &#39;class&#39; was built under R version 3.6.3</code></pre>
-<pre class="r"><code>library(caret)</code></pre>
-<pre><code>## Warning: package &#39;caret&#39; was built under R version 3.6.3</code></pre>
-<pre><code>## Warning: package &#39;lattice&#39; was built under R version 3.6.3</code></pre>
-<pre class="r"><code>library(e1071)</code></pre>
-<pre><code>## Warning: package &#39;e1071&#39; was built under R version 3.6.3</code></pre>
-<pre class="r"><code>library(reshape2)</code></pre>
-<pre><code>## Warning: package &#39;reshape2&#39; was built under R version 3.6.3</code></pre>
-<pre class="r"><code>library(stringr)
+<pre class="r"><code>library(tidyverse)
+library(GGally)
+library(cowplot)
+library(class)
+library(caret)
+library(e1071)
+library(reshape2)
+library(stringr)
 library(naniar)
-library(skimr) #for data summary</code></pre>
-<pre><code>## Warning: package &#39;skimr&#39; was built under R version 3.6.3</code></pre>
-<pre class="r"><code>Rcolors &lt;- c(&quot;lightseagreen&quot;, &quot;darkslateblue&quot;,&quot;orange&quot;)</code></pre>
+library(skimr) #for data summary
+Rcolors &lt;- c(&quot;lightseagreen&quot;, &quot;darkslateblue&quot;,&quot;orange&quot;)</code></pre>
 </div>
 <div id="load-and-look-at-the-data" class="section level1">
 <h1>Load and look at the data</h1>
@@ -895,7 +890,8 @@ NoSalary &lt;- read.csv(&quot;CaseStudy2CompSet(NoSalary).csv&quot;, header = T)
 <h3>Investigate Missing Values in Each Column</h3>
 <pre class="r"><code># No missing values are found for any variables (columns) in the dataset.
 gg_miss_var(employee.df, show_pct = T) + labs(title = &#39;Percent Missing Values&#39;) + theme(plot.title = element_text(hjust = 0.5))</code></pre>
-<pre><code>## Warning: It is deprecated to specify `guide = FALSE` to remove a guide. Please use `guide = &quot;none&quot;` instead.</code></pre>
+<pre><code>## Warning: It is deprecated to specify `guide = FALSE` to remove a guide. Please use
+## `guide = &quot;none&quot;` instead.</code></pre>
 <p><img src="DDS_Project2_Final_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 </div>
 <div id="attrition-distribution" class="section level3">
@@ -1240,6 +1236,7 @@ NoAttrition$Attrition = NBpreds$NBpreds
 
 Attrition.Classify = NoAttrition %&gt;% select(&quot;ID&quot;, &quot;Attrition&quot;) %&gt;% arrange(ID)
 
+# This code was used to label the predicted attrition on the file provided, but commented out to not replace the file when knitted at a later time.
 #write.csv(Attrition.Classify, file = &quot;Case2PredictionsBoyd_Pandey Attrition.csv&quot;, row.names=FALSE)
 
 # plot counts of attrition
@@ -1347,28 +1344,81 @@ ggplot(NB.df, aes(x=TestNumber, y=Value, linetype=Test, colors=Test)) +
 </div>
 <div id="k-nn-models" class="section level3">
 <h3>k-NN Models</h3>
-<pre class="r"><code>#kNNsplitPerc &lt;- .7
+<pre class="r"><code>kNNsplitPerc &lt;- .7
 
 # Create dataframe for k-NN model 
-#knn.df &lt;- employee.df
+knn.df &lt;- employee.df
 
 # Create standardized variables
-#knn.df$z_Age = scale(knn.df$Age)
-#knn.df$z_YearsSinceLastPromotion = scale(knn.df$YearsSinceLastPromotion)
+knn.df$z_Age = scale(knn.df$Age)
+knn.df$z_YearsSinceLastPromotion = scale(knn.df$YearsSinceLastPromotion)
 
-#kNNtrainIndices &lt;- sample(1:dim(knn.df)[1],round(kNNsplitPerc * dim(knn.df)[1]))
-#kNNdfTrain &lt;- knn.df[kNNtrainIndices,]
-#kNNdfTest &lt;- knn.df[-kNNtrainIndices,]
+kNNtrainIndices &lt;- sample(1:dim(knn.df)[1],round(kNNsplitPerc * dim(knn.df)[1]))
+kNNdfTrain &lt;- knn.df[kNNtrainIndices,]
+kNNdfTest &lt;- knn.df[-kNNtrainIndices,]
 
 # Internal Model
-#classifications &lt;- knn.cv(knn.df[,c(37,38)],knn.df$Attrition, k = 20)
-#confusionMatrix(table(classifications,knn.df$Attrition))
+classifications &lt;- knn.cv(knn.df[,c(2,25)],knn.df$Attrition, k = 20)
+confusionMatrix(table(classifications,knn.df$Attrition))</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##                
+## classifications  No Yes
+##             No  728 140
+##             Yes   2   0
+##                                           
+##                Accuracy : 0.8368          
+##                  95% CI : (0.8105, 0.8607)
+##     No Information Rate : 0.8391          
+##     P-Value [Acc &gt; NIR] : 0.595           
+##                                           
+##                   Kappa : -0.0046         
+##                                           
+##  Mcnemar&#39;s Test P-Value : &lt;2e-16          
+##                                           
+##             Sensitivity : 0.9973          
+##             Specificity : 0.0000          
+##          Pos Pred Value : 0.8387          
+##          Neg Pred Value : 0.0000          
+##              Prevalence : 0.8391          
+##          Detection Rate : 0.8368          
+##    Detection Prevalence : 0.9977          
+##       Balanced Accuracy : 0.4986          
+##                                           
+##        &#39;Positive&#39; Class : No              
+## </code></pre>
+<pre class="r"><code># External Model
+classifications1 &lt;- knn(kNNdfTrain[,c(2,35)], kNNdfTest[,c(2,35)], kNNdfTrain$Attrition, 
+                       prob = TRUE, k = 20)
 
-# External Model
-#classifications1 &lt;- knn(kNNdfTrain[,c(37,38)], kNNdfTest[,c(37,38)], kNNdfTrain$Attrition, 
-#                       prob = TRUE, k = 10)
-
-#confusionMatrix(table(classifications1,kNNdfTest$Attrition))</code></pre>
+confusionMatrix(table(classifications1,kNNdfTest$Attrition))</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##                 
+## classifications1  No Yes
+##              No  218  37
+##              Yes   3   3
+##                                           
+##                Accuracy : 0.8467          
+##                  95% CI : (0.7972, 0.8882)
+##     No Information Rate : 0.8467          
+##     P-Value [Acc &gt; NIR] : 0.5421          
+##                                           
+##                   Kappa : 0.0942          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 1.811e-07       
+##                                           
+##             Sensitivity : 0.9864          
+##             Specificity : 0.0750          
+##          Pos Pred Value : 0.8549          
+##          Neg Pred Value : 0.5000          
+##              Prevalence : 0.8467          
+##          Detection Rate : 0.8352          
+##    Detection Prevalence : 0.9770          
+##       Balanced Accuracy : 0.5307          
+##                                           
+##        &#39;Positive&#39; Class : No              
+## </code></pre>
 </div>
 </div>
 <div id="salary-model" class="section level2">
@@ -1473,13 +1523,24 @@ NoSalary %&gt;% ggplot(aes(x = Age, y = Salary)) +
   geom_point(color = &quot;darkslateblue&quot;) + 
   ggtitle(&quot;Predicted Salary by Age&quot;) +
   ylab(&quot;Salary&quot;) + 
-  theme(plot.title = element_text(hjust = 0.5)) </code></pre>
+  theme(plot.title = element_text(hjust = 0.5))</code></pre>
 <p><img src="DDS_Project2_Final_files/figure-html/unnamed-chunk-20-3.png" width="672" /></p>
 <pre class="r"><code>#Salary.Classify = NoSalary %&gt;% select(&quot;ID&quot;, &quot;Salary&quot;) %&gt;% arrange(ID)
 
+# This code was used to label the predicted Salary amounts on the file provided, but commented out to not replace the file when knitted at a later time.
 #write.csv(Salary.Classify, file = &quot;Case2PredictionsBoyd_Pandey Salary.csv&quot;, row.names=FALSE)</code></pre>
 </div>
 </div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<ol style="list-style-type: decimal">
+<li>Top 3 factors that contribute to employee turnover are Age, Monthly Income, and Job Role.</li>
+<li>Sales Representative have the highest turnover.</li>
+<li>Manufacturing Director, Research Director and Managers are the oldest, have highest income and have the least amount of turnover.</li>
+<li>We used a Naïve Bayes model to predict attrition with 87% Accuracy.</li>
+<li>We used a Linear Regression model to predict salary with RMSE of 1080 and extremely low P-Value (&lt; 2.2e-16).</li>
+</ol>
 </div>
 
 
