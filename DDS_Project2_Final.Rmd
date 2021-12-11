@@ -1,0 +1,549 @@
+---
+title: "DDS_CaseStudy_2"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+author: "Kevin Boyd & Shikha Pandey"
+date: "12/7/2021"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Load Libraries and Set Color Scheme
+```{r, message=F}
+library(tidyverse)
+library(GGally)
+library(cowplot)
+library(class)
+library(caret)
+library(e1071)
+library(reshape2)
+library(stringr)
+library(naniar)
+library(skimr) #for data summary
+Rcolors <- c("lightseagreen", "darkslateblue","orange")
+```
+
+
+# Load and look at the data
+```{r}
+# The dataset has 870 observations (rows) and 36 variables (columns).
+employee.df <- read.csv("CaseStudy2-data.csv", header = T)
+str(employee.df)
+skim(employee.df)
+# There are 300 observations in each dataset below to predict Attrition and Salary respectively.
+NoAttrition = read.csv("CaseStudy2CompSet No Attrition.csv", header = TRUE)
+NoSalary <- read.csv("CaseStudy2CompSet(NoSalary).csv", header = T)
+```
+
+
+# Employee EDA
+## Look at the Variables
+### Investigate Missing Values in Each Column
+```{r}
+# No missing values are found for any variables (columns) in the dataset.
+gg_miss_var(employee.df, show_pct = T) + labs(title = 'Percent Missing Values') + theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Attrition Distribution
+```{r}
+employee.df %>% ggplot(aes(x = Attrition, fill = Attrition)) + 
+  geom_bar() + 
+  ggtitle("Distribution of Attrition")  + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = Rcolors)
+```
+
+### Monthly Income
+```{r}
+# We see from the histogram that most number of employees have salary in range $2000-$4000 and then second highest range is $4000-$6000.
+ggplot(employee.df, aes(x=MonthlyIncome, fill = Attrition)) +
+  geom_histogram() +
+  ggtitle("Monthly Income Based on Attrition") +
+  xlab("Monthly Income") +
+  ylab("Count") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = Rcolors)
+```
+
+### Monthly Income by Groups
+```{r}
+# Let's create income groups and look at Attrition for those income groups.
+employee.df$IncomeGroup <- cut(employee.df$MonthlyIncome, breaks = c(0, 2000, 4000, 6000, 10000, 15000, 20000), labels = c("<$2000","$2000-$4000","$4000-$6000","$6000-$10000","$10000-$15000","$15000-$20000"))
+
+# Lowest Income Group (<$2000) has the highest Attrition rate, followed by second lowest Income Group ($2000-$4000).
+employee.df %>% ggplot(aes_string(x = "IncomeGroup", fill = "Attrition")) + 
+  geom_bar(position = "fill") + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Income Group", y = "Percent Employees", title = "Attrition for Income Groups") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = Rcolors)
+```
+
+### Age by Groups
+```{r}
+# Let's create age groups and look at Attrition for those age groups.
+employee.df$AgeGroup <- cut(employee.df$Age, breaks = c(18,25,35,45,60), labels = c("18-25","25-35","35-45","45-60"), include.lowest = TRUE)
+
+# Younger age groups 18-25 and 25-35 have higher attrition rate.
+employee.df %>% ggplot(aes_string(x = "AgeGroup", fill = "Attrition")) + 
+  geom_bar(position = "fill") + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Age Group", y = "Percent Employees", title = "Attrition for Age Groups") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = Rcolors)
+```
+
+### Job Role
+```{r}
+# Research Directors have highest attrition rate whereas Sales Representatives have the least. 
+employee.df %>% ggplot(aes_string(x = "JobRole", fill = "Attrition")) + 
+  geom_bar(position = "fill") + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Job Role", y = "Percent Employees", title = "Attrition for Job Role") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_flip() + 
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + 
+  scale_fill_manual(values = Rcolors)
+```
+
+### Monthly Income based on Job Role
+```{r}
+ggplot(employee.df, aes(x=MonthlyIncome, fill = Attrition)) +
+  geom_histogram() +
+  facet_wrap(~JobRole) +
+  ggtitle("Monthly Income based on Job Role") +
+  xlab("Monthly Income") +
+  ylab("Count") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = Rcolors)
+```
+
+
+### Job Role and Job Satisfaction
+```{r}
+ggplot(employee.df, aes(x=JobSatisfaction, fill = Attrition)) +
+  geom_bar() +
+  ggtitle("Attrition based on Job Role and Job Satisfaction") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = Rcolors) +
+  facet_wrap(~JobRole)
+```
+
+
+### Job Role, Age, and Monthly Income 
+```{r}
+ggplot(employee.df, aes(x=Age, y=MonthlyIncome, color = Attrition)) +
+  geom_point() +
+  facet_wrap(~JobRole) +
+  ggtitle("Attrition based on Age and Monthly Income") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_manual(values = Rcolors)
+```
+
+
+### Overtime
+```{r}
+# Higher attrition rate for employees who work overtime.
+employee.df %>% ggplot(aes_string(x = "OverTime", fill = "Attrition")) + 
+  geom_bar(position = "fill") + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Overtime", y = "Percent Employees", title = "Attrition for Overtime") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  scale_fill_manual(values = Rcolors)
+```
+
+
+### Business Travel
+```{r}
+# Attrition level goes up from Non-Travel to Travel-Frequently category.
+employee.df %>% ggplot(aes_string(x = "BusinessTravel", fill = "Attrition")) + 
+  geom_bar(position = "fill") + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Business Travel", y = "Percent Employees", title = "Attrition for Business Travel") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  scale_fill_manual(values = Rcolors)
+```
+
+
+### Marital Status
+```{r}
+# Divorce contribute to attrition
+bar <- ggplot(employee.df, aes(x=MaritalStatus, fill = MaritalStatus)) +
+  geom_bar() +
+  facet_wrap(~Attrition) +
+  ggtitle("Attrition Dependent on Marital Status ") +
+  xlab("Attrition") +
+  ylab("Count")
+bar <- bar + scale_fill_manual(values = Rcolors)
+
+# Yes Attrition
+# Make new data frames for married, divorced, and single
+df1 <- employee.df %>%
+  filter(Attrition == "Yes")
+df1length <- NROW(df1)
+df1married <- length(grep("Married", df1$MaritalStatus))
+df1divorced <- length(grep("Divorced", df1$MaritalStatus))
+df1single <- length(grep("Single", df1$MaritalStatus))
+
+Yes_df <- data.frame(MaritalStatus = c("Married","Divorced","Single"), 
+                     Value = c(df1married,df1divorced,df1single))
+
+plot1 <- ggplot(Yes_df, aes(x="", y=Value, fill=MaritalStatus)) +
+  geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Attrition: Yes")
+pie1 <- plot1 + coord_polar("y", start=0)
+pie1 <- pie1 + scale_fill_manual(values = Rcolors)
+
+# No Attrition
+# Make new data frames for married, divorced, and single
+df2 <- employee.df %>%
+  filter(Attrition == "No")
+df2length <- NROW(df2)
+df2married <- length(grep("Married", df2$MaritalStatus))
+df2divorced <- length(grep("Divorced", df2$MaritalStatus))
+df2single <- length(grep("Single", df2$MaritalStatus))
+
+No_df <- data.frame(MaritalStatus = c("Married","Divorced","Single"), 
+                     Value = c(df2married,df2divorced,df2single))
+
+plot2 <- ggplot(No_df, aes(x="", y=Value, fill=MaritalStatus)) +
+  geom_bar(width = 1, stat = "identity") + xlab("") + ylab("") + ggtitle("Attrition: No")
+pie2 <- plot2 + coord_polar("y", start=0)
+pie2 <- pie2 + scale_fill_manual(values = Rcolors)
+
+piecharts <- plot_grid(pie2,pie1, ncol = 2,  labels = c("B","C"))
+allplots <- plot_grid(bar,piecharts, nrow = 2, labels = "A")
+allplots
+```
+
+
+### Bar Plots Multiple Variables
+```{r}
+EDA1 <- ggplot(employee.df, aes(x=RelationshipSatisfaction, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Relationship Satisfaction") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA1 <- EDA1 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA2 <- ggplot(employee.df, aes(x=JobLevel, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Job Level") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA2 <- EDA2 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA3 <- ggplot(employee.df, aes(x=JobSatisfaction, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Job Satisfaction") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA3 <- EDA3 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA4 <- ggplot(employee.df, aes(x=YearsWithCurrManager, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Years With Current Manager") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA4 <- EDA4 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA5 <- ggplot(employee.df, aes(x=YearsSinceLastPromotion, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Years Since Last Promotion") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA5 <- EDA5 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA6 <- ggplot(employee.df, aes(x=YearsAtCompany, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Years At Company") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA6 <- EDA6 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA7 <- ggplot(employee.df, aes(x=YearsInCurrentRole, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Years in Current Role") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA7 <- EDA7 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA8 <- ggplot(employee.df, aes(x=NumCompaniesWorked, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Companies Worked") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA8 <- EDA8 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA9 <- ggplot(employee.df, aes(x=MaritalStatus, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  ggtitle("Marital Status") +
+  ylab("% Count") + 
+  scale_y_continuous(labels = scales::percent) + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = Rcolors)
+EDA9 <- EDA9 + theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA10 <- plot_grid(EDA1,EDA2,EDA3,EDA4,EDA5,EDA6,EDA7,EDA8,EDA9, ncol = 3, nrow = 3)
+EDA10
+```
+
+
+### Scatter Plots with Continuous Variables
+```{r}
+EDA.A <- ggplot(employee.df, aes(x=TotalWorkingYears, y=PercentSalaryHike, color = Attrition)) +
+  geom_point() +
+  ggtitle("Total Working Years vs % Salary Hike") +
+  scale_color_manual(values = Rcolors) +
+  ylab("% Salary Hike") + 
+  theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA.B <- ggplot(employee.df, aes(x=YearsWithCurrManager, y=PercentSalaryHike, color = Attrition)) +
+  geom_point() +
+  ggtitle("Yrs With Manager vs % Salary Hike") +
+  scale_color_manual(values = Rcolors) +
+  ylab("% Salary Hike") +
+  xlab("Yrs With Manager") + 
+  theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA.C <-ggplot(employee.df, aes(x=YearsAtCompany, y=YearsInCurrentRole, color = Attrition)) +
+  geom_point() +
+  ggtitle("Yrs At Company vs Yrs In Role") +
+  scale_color_manual(values = Rcolors) +
+  ylab("Yrs In Role") + 
+  theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA.E <- ggplot(employee.df, aes(x=Age, y=YearsSinceLastPromotion, color = Attrition)) +
+  geom_point() +
+  ggtitle("Age vs Job Yrs Last Promotion") + 
+  scale_color_manual(values = Rcolors) +
+  ylab("Yrs Last Promotion") + 
+  theme(plot.title = element_text(size = 12, hjust = 0.5))
+
+EDA.G <- plot_grid(EDA.A,EDA.B,EDA.C,EDA.E, ncol = 2, nrow = 2)
+EDA.G
+```
+
+
+# Models
+## Attrition Models
+### Naive Bayes
+```{r}
+set.seed(9)
+NB.df <- select(employee.df, "Attrition", "Age", "Department", "EnvironmentSatisfaction", "JobInvolvement", "JobLevel", "JobRole", "JobSatisfaction", "MaritalStatus", "MonthlyIncome", "NumCompaniesWorked", "OverTime", "StockOptionLevel", "TotalWorkingYears", "WorkLifeBalance", "YearsAtCompany", "YearsInCurrentRole", "YearsWithCurrManager")
+NBsplitPerc <- .85
+NBtrainIndices <- sample(1:dim(NB.df)[1],round(NBsplitPerc * dim(NB.df)[1]))
+NBdfTrain <- NB.df[NBtrainIndices,]
+NBdfTest <- NB.df[-NBtrainIndices,]
+
+# Naive Bayes model
+NBmodel = naiveBayes(Attrition~.,data = NBdfTrain)
+confusionMatrix(table(predict(NBmodel,NBdfTest),NBdfTest$Attrition))
+
+# Make predictions with model
+NBpreds = predict(NBmodel, NoAttrition)
+NBpreds = data.frame(NBpreds)
+NoAttrition$Attrition = NBpreds$NBpreds
+
+Attrition.Classify = NoAttrition %>% select("ID", "Attrition") %>% arrange(ID)
+
+#write.csv(Attrition.Classify, file = "Case2PredictionsBoyd_Pandey Attrition.csv", row.names=FALSE)
+
+# plot counts of attrition
+ggplot(Attrition.Classify, aes(x=Attrition, fill=Attrition)) +
+  geom_bar(fill = Rcolors[c(1,2)]) +
+  ggtitle("Predicted Attrition") +
+  ylab("Count") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Multiple Train/Test Sets
+```{r}
+iterations = 100
+
+masterAcc = matrix(nrow = iterations)
+masterSens = matrix(nrow = iterations)
+masterSpec = matrix(nrow = iterations)
+
+splitPerc = .85 #Training / Test split Percentage
+
+for(j in 1:iterations)
+{
+  
+  trainIndices = sample(1:dim(NB.df)[1],round(splitPerc * dim(NB.df)[1]))
+  train = NB.df[trainIndices,]
+  test = NB.df[-trainIndices,]
+  
+  model = naiveBayes(train[,c(2:18)],train$Attrition)
+  table(predict(model,test[,c(2:18)]),test$Attrition)
+  CM = confusionMatrix(table(predict(model,test[,c(2:18)]),test$Attrition))
+  masterAcc[j] = CM$overall[1]
+  masterSens[j] = CM$byClass[1]
+  masterSpec[j] = CM$byClass[2]
+}
+
+# Accuracy measurements
+MeanAcc = colMeans(masterAcc)
+MeanAcc
+masterAcc <- data.frame(masterAcc)
+masterAcc$TestNumber <- 1:nrow(masterAcc)
+max(masterAcc$masterAcc)
+min(masterAcc$masterAcc)
+ggplot(masterAcc, aes(x=seq(1,100,1), y=masterAcc)) + 
+  geom_line(color="darkslateblue") +
+  ggtitle("Accuracy of 100 Train/Test Sets") +
+  xlab("Number of Train/Test Sets") +
+  ylab("Accuracy") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Sensitivity measurements
+MeanSens = colMeans(masterSens)
+MeanSens
+masterSens <- data.frame(masterSens)
+masterSens$TestNumber <- 1:nrow(masterSens)
+max(masterSens$masterSens)
+min(masterSens$masterSens)
+ggplot(masterSens, aes(x=seq(1,100,1), y=masterSens)) + 
+  geom_line(color="darkslateblue") +
+  ggtitle("Sensitivity of 100 Train/Test Sets") +
+  xlab("Number of Train/Test Sets") +
+  ylab("Sensitivity") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Specificity measurements
+MeanSpec = colMeans(masterSpec)
+MeanSpec
+masterSpec <- data.frame(masterSpec)
+masterSpec$TestNumber <- 1:nrow(masterSpec)
+max(masterSpec$masterSpec)
+min(masterSpec$masterSpec)
+ggplot(masterSpec, aes(x=seq(1,100,1), y=masterSpec)) + 
+  geom_line(color="darkslateblue") +
+  ggtitle("Specificity of 100 Train/Test Sets") +
+  xlab("Number of Train/Test Sets") +
+  ylab("Specificity") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Plot together
+masterAcc$Value <- masterAcc$masterAcc
+masterAcc$Test <- "Accuracy"
+masterSpec$Value <- masterSpec$masterSpec
+masterSpec$Test <- "Specificity"
+masterSens$Value <- masterSens$masterSens
+masterSens$Test <- "Sensitivity"
+NB.df <- rbind(masterAcc[,c(2,3,4)],masterSens[,c(2,3,4)],masterSpec[,c(2,3,4)])
+
+
+ggplot(NB.df, aes(x=TestNumber, y=Value, linetype=Test, colors=Test)) + 
+  geom_line(color = "darkslateblue") +
+  ggtitle("Accuracy, Sensitivity, & Specificity of 100 Train/Test Sets") +
+  xlab("Number of Train/Test Sets") +
+  ylab("Statistical Values") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_manual(values = Rcolors)
+```
+
+
+### k-NN Models
+```{r}
+kNNsplitPerc <- .7
+
+# Create dataframe for k-NN model 
+knn.df <- employee.df
+
+# Create standardized variables
+knn.df$z_Age = scale(knn.df$Age)
+knn.df$z_YearsSinceLastPromotion = scale(knn.df$YearsSinceLastPromotion)
+
+kNNtrainIndices <- sample(1:dim(knn.df)[1],round(kNNsplitPerc * dim(knn.df)[1]))
+kNNdfTrain <- knn.df[kNNtrainIndices,]
+kNNdfTest <- knn.df[-kNNtrainIndices,]
+
+# Internal Model
+classifications <- knn.cv(knn.df[,c(37,38)],knn.df$Attrition, k = 20)
+confusionMatrix(table(classifications,knn.df$Attrition))
+
+# External Model
+classifications1 <- knn(kNNdfTrain[,c(37,38)], kNNdfTest[,c(37,38)], kNNdfTrain$Attrition, 
+                       prob = TRUE, k = 10)
+
+confusionMatrix(table(classifications1,kNNdfTest$Attrition))
+```
+
+
+## Salary Model
+### Linear Regression
+```{r}
+# Train and Test for Linear Regression
+set.seed(9)
+lmsplitPerc <- .8
+trainIndices <- sample(1:dim(employee.df)[1],round(lmsplitPerc * dim(employee.df)[1]))
+dfTrain <- employee.df[trainIndices,]
+dfTest <- employee.df[-trainIndices,]
+dfTrain <- na.omit(dfTrain)
+dfTest <- na.omit(dfTest)
+
+# Multiple variable linear regression with train and test
+Model1_fit = lm(MonthlyIncome~Age+JobLevel+JobRole, data = dfTrain)
+summary(Model1_fit)
+
+# Show residuals
+hist(Model1_fit$residuals, col = "darkslateblue", main = "Histogram of Residuals")
+sqrt(sum((Model1_fit$residuals)^2))
+
+# Predict with this model
+preds2 <- predict(Model1_fit, newdata = dfTest)
+
+# Assess model
+MSPE = data.frame(Observed = dfTest$MonthlyIncome, Predicted = preds2)
+MSPE$Resisdual = MSPE$Observed - MSPE$Predicted
+MSPE$SquaredResidual = MSPE$Resisdual^2
+mean(MSPE$SquaredResidual)
+
+# Multiple variable linear regression
+Model2_fit = lm(MonthlyIncome~Age+JobLevel+JobRole, data = employee.df)
+summary(Model2_fit)
+
+# Show residuals
+hist(Model2_fit$residuals, col = "darkslateblue", main = "Histogram of Residuals")
+sqrt(sum((Model2_fit$residuals)^2))
+
+# Predict with this model
+preds2 <- predict(Model2_fit, newdata = NoSalary)
+preds2 <- as.data.frame(preds2)
+NoSalary$Salary <- preds2[,1]
+
+# Plot predicted values
+NoSalary %>% ggplot(aes(x = Age, y = Salary)) + 
+  geom_point(color = "darkslateblue") + 
+  ggtitle("Predicted Salary by Age") +
+  ylab("Salary") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+Salary.Classify = NoSalary %>% select("ID", "Salary") %>% arrange(ID)
+
+#write.csv(Salary.Classify, file = "Case2PredictionsBoyd_Pandey Salary.csv", row.names=FALSE)
+```
+
