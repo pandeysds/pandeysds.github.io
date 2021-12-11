@@ -10,3 +10,5 @@ output: html_document
 <a href = "https://pandeys.shinyapps.io/Budweiser/">Beer Analysis App</a>
 
 [Credit Data](https://pandeys.shinyapps.io/CLT2/)
+
+[Attrition Case Study](https://youtu.be/MuLEzt19qhw)
