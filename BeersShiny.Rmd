@@ -1,0 +1,156 @@
+---
+title: "Beer Shiny"
+author: "Richard"
+date: "11/8/2021"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r results = 'hide', message = FALSE, echo = FALSE, warning = FALSE}
+
+# Prepping DF for first two plots
+library(dplyr)
+library(readr)
+
+Beers <- read_csv("Beers.csv")
+Breweries <- read_csv("Breweries.csv")
+BrewBeer <- full_join(Beers, Breweries, by = c('Brewery_id'='Brew_ID'))
+BrewClean <- BrewBeer %>% na.omit()
+```
+
+```{r echo = FALSE, warning = FALSE}
+
+library(shiny)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+
+ui <- fluidPage(
+  
+  # App title ----
+  titlePanel("Beers!"),
+  
+  # Sidebar layout with input and output definitions ----
+  sidebarLayout(
+    
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+      
+      selectInput("variable",
+                  label = "ABV or IBU",
+                  choices = list("ABV", "IBU"),
+                  selected = 1),
+      
+      #Input: Slider for the number of bins ----
+      selectInput("state",
+                  label = "State",
+                  choices = BrewClean$State,
+                  selected = 1),
+      
+      #Copy the line below to make a select box 
+      selectInput("select", 
+                  label = "Type of Plot", 
+                  choices = list("Histogram" = "histogram", "Boxplot" = "boxplot"), 
+                  selected = 1),
+      
+      selectInput("regression",
+                  label = "Add Line",
+                  choices = list("Line", "No Line"),
+                  selected = 1),
+      
+      
+                    hr(),
+                    fluidRow(column(3, verbatimTextOutput("value")))
+    ),
+    
+    # Main panel for displaying outputs ----
+    mainPanel(
+      
+      # Output: Histogram ----
+      plotOutput(outputId = "distPlot"),
+      plotOutput(outputId = "scatter"),
+      plotOutput(outputId = "heat")
+      
+    )
+  )
+)
+
+
+# Define server logic required to draw a histogram ----
+server <- function(input, output) {
+  
+  # First Plot - Histogram vs Boxplot
+  output$distPlot <- renderPlot({
+    
+    if(input$variable == "ABV") {
+      if(input$select == "histogram") {
+        hist(BrewClean$ABV[BrewClean$State == input$state])
+      }
+      if(input$select == "boxplot") {
+        boxplot(BrewClean$ABV[BrewClean$State == input$state])
+      }
+    }
+    
+    if(input$variable == "IBU") {
+      if(input$select == "histogram") {
+        hist(BrewClean$IBU[BrewClean$State == input$state])
+      }
+      if(input$select == "boxplot") {
+        boxplot(BrewClean$IBU[BrewClean$State == input$state])
+      }
+    }
+    
+  })
+  
+  # Second plot - Scatterplot
+  output$scatter <- renderPlot({
+    plot(BrewClean$ABV[BrewClean$State == input$state],BrewClean$IBU[BrewClean$State == input$state])
+    if(input$regression == "Line") {
+      abline(lm(IBU ~ ABV, data = BrewClean))
+    }
+  })
+  
+  # Prepping data for final plot
+  # Ales <- BrewClean %>% 
+  # mutate(BeerType = ifelse(grepl('IPA',Style),'IPA',
+  #                          ifelse(grepl('Ale',Style),'Ale','Neither')),
+  #        State = str_replace_all(State,'\\s+','')) %>% 
+  # filter(BeerType != 'Neither')
+  # 
+  # AlesSummary <- Ales %>% 
+  # group_by(State) %>% 
+  # summarize(medianABV = median(ABV),
+  #           medianIBU = median(IBU),
+  #           AleToIPA = sum(BeerType == 'Ale')/sum(BeerType == 'IPA'),
+  #           IPAToAle = sum(BeerType == 'IPA')/sum(BeerType == 'Ale'),
+  #           AlePercent = sum(BeerType == 'Ale')/sum(grepl('IPA|Ale',BeerType)),
+  #           IPAPercent = sum(BeerType == 'IPA')/sum(grepl('IPA|Ale',BeerType))
+  #           ) %>% 
+  # mutate(State = str_replace_all(State,'\\s+',''))
+  # 
+  # states <- map_data("state") %>% 
+  #   mutate(State = state.abb[match(region,tolower(state.name))])
+  # map.df <- full_join(states, AlesSummary, by = 'State')
+  # map.df <- map.df[order(map.df$order),]
+  # 
+  # # Plotting Heatmap
+  # output$heat <- renderPlot({
+  #   heatmap <- map.df %>% 
+  #     ggplot(aes(x=long,y=lat,group=group))+
+  #     geom_polygon(aes(fill=AlePercent))+
+  #     geom_path()+ 
+  #     scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90")+
+  #     coord_map() + 
+  #     ggtitle("Percentage of Ales (to IPA)") + 
+  #     labs(fill = "Percent of Ales")
+  #   heatmap
+  # })
+}
+
+shinyApp(ui, server)
+
+```

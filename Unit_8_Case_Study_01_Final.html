@@ -247,10 +247,16 @@ $(document).ready(function () {
   <a href="index.html">Home</a>
 </li>
 <li>
-  <a href="About-Me.html">About Me</a>
+  <a href="Introduction.html">Introduction</a>
 </li>
 <li>
   <a href="Unit_8_Case_Study_01_Final.html">Beer Case Study</a>
+</li>
+<li>
+  <a href="CLT2.html">CLT2</a>
+</li>
+<li>
+  <a href="DDS_Project2_Final.html">Attrition Case Study</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -416,64 +422,45 @@ str(Budweiser)</code></pre>
 ##  $ State     : Factor w/ 51 levels &quot;AK&quot;,&quot;AL&quot;,&quot;AR&quot;,..: 24 24 24 24 24 24 18 18 18 18 ...</code></pre>
 <pre class="r"><code>#First 6 observations of merged dataset
 head(Budweiser)</code></pre>
-<pre><code>##   Brewery_ID            Brewery Beer_ID          Beer   ABV IBU
-## 1          1 NorthGate Brewing     2692  Get Together 0.045  50
-## 2          1 NorthGate Brewing     2691 Maggie&#39;s Leap 0.049  26
-## 3          1 NorthGate Brewing     2690    Wall&#39;s End 0.048  19
-## 4          1 NorthGate Brewing     2689       Pumpion 0.060  38
-## 5          1 NorthGate Brewing     2688    Stronghold 0.060  25
-## 6          1 NorthGate Brewing     2687   Parapet ESB 0.056  47
-##                                 Style Ounces        City State
-## 1                        American IPA     16 Minneapolis    MN
-## 2                  Milk / Sweet Stout     16 Minneapolis    MN
-## 3                   English Brown Ale     16 Minneapolis    MN
-## 4                         Pumpkin Ale     16 Minneapolis    MN
-## 5                     American Porter     16 Minneapolis    MN
-## 6 Extra Special / Strong Bitter (ESB)     16 Minneapolis    MN</code></pre>
+<pre><code>##   Brewery_ID            Brewery Beer_ID          Beer   ABV IBU                               Style Ounces        City State
+## 1          1 NorthGate Brewing     2692  Get Together 0.045  50                        American IPA     16 Minneapolis    MN
+## 2          1 NorthGate Brewing     2691 Maggie&#39;s Leap 0.049  26                  Milk / Sweet Stout     16 Minneapolis    MN
+## 3          1 NorthGate Brewing     2690    Wall&#39;s End 0.048  19                   English Brown Ale     16 Minneapolis    MN
+## 4          1 NorthGate Brewing     2689       Pumpion 0.060  38                         Pumpkin Ale     16 Minneapolis    MN
+## 5          1 NorthGate Brewing     2688    Stronghold 0.060  25                     American Porter     16 Minneapolis    MN
+## 6          1 NorthGate Brewing     2687   Parapet ESB 0.056  47 Extra Special / Strong Bitter (ESB)     16 Minneapolis    MN</code></pre>
 <pre class="r"><code>#Last 6 observations of merged dataset
 tail(Budweiser)</code></pre>
-<pre><code>##      Brewery_ID                       Brewery Beer_ID
-## 2405        556         Ukiah Brewing Company      98
-## 2406        557       Butternuts Beer and Ale      52
-## 2407        557       Butternuts Beer and Ale      51
-## 2408        557       Butternuts Beer and Ale      50
-## 2409        557       Butternuts Beer and Ale      49
-## 2410        558 Sleeping Lady Brewing Company      30
-##                           Beer   ABV IBU                   Style
-## 2405             Pilsner Ukiah 0.055  NA         German Pilsener
-## 2406  Heinnieweisse Weissebier 0.049  NA              Hefeweizen
-## 2407           Snapperhead IPA 0.068  NA            American IPA
-## 2408         Moo Thunder Stout 0.049  NA      Milk / Sweet Stout
-## 2409         Porkslap Pale Ale 0.043  NA American Pale Ale (APA)
-## 2410 Urban Wilderness Pale Ale 0.049  NA        English Pale Ale
-##      Ounces          City State
-## 2405     12         Ukiah    CA
-## 2406     12 Garrattsville    NY
-## 2407     12 Garrattsville    NY
-## 2408     12 Garrattsville    NY
-## 2409     12 Garrattsville    NY
-## 2410     12     Anchorage    AK</code></pre>
+<pre><code>##      Brewery_ID                       Brewery Beer_ID                      Beer   ABV IBU                   Style Ounces
+## 2405        556         Ukiah Brewing Company      98             Pilsner Ukiah 0.055  NA         German Pilsener     12
+## 2406        557       Butternuts Beer and Ale      52  Heinnieweisse Weissebier 0.049  NA              Hefeweizen     12
+## 2407        557       Butternuts Beer and Ale      51           Snapperhead IPA 0.068  NA            American IPA     12
+## 2408        557       Butternuts Beer and Ale      50         Moo Thunder Stout 0.049  NA      Milk / Sweet Stout     12
+## 2409        557       Butternuts Beer and Ale      49         Porkslap Pale Ale 0.043  NA American Pale Ale (APA)     12
+## 2410        558 Sleeping Lady Brewing Company      30 Urban Wilderness Pale Ale 0.049  NA        English Pale Ale     12
+##               City State
+## 2405         Ukiah    CA
+## 2406 Garrattsville    NY
+## 2407 Garrattsville    NY
+## 2408 Garrattsville    NY
+## 2409 Garrattsville    NY
+## 2410     Anchorage    AK</code></pre>
 <pre class="r"><code>#After merging the beers and breweries datasets based on Brewery_ID from beers dataset and Brew_ID from breweries dataset, resulting dataset, Budweiser, now has 2410 observations with 10 columns.
 #Head of the dataset displays first 6 rows of data and tail of dataset displays last 6 rows of data from this merged dataset.</code></pre>
 <p>##3. Addressing the missing values in each column.</p>
 <pre class="r"><code>#Looking for missing values in dataset
 gg_miss_var(Budweiser) + labs(title = &#39;Missing Values&#39;, x = &#39;Dataset Columns&#39;)</code></pre>
-<pre><code>## Warning: It is deprecated to specify `guide = FALSE` to remove a guide.
-## Please use `guide = &quot;none&quot;` instead.</code></pre>
+<pre><code>## Warning: It is deprecated to specify `guide = FALSE` to remove a guide. Please use `guide = &quot;none&quot;` instead.</code></pre>
 <p><img src="Unit_8_Case_Study_01_Final_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <pre class="r"><code>sapply(Budweiser, function(x) sum(is.na(x)))</code></pre>
-<pre><code>## Brewery_ID    Brewery    Beer_ID       Beer        ABV        IBU 
-##          0          0          0          0         62       1005 
-##      Style     Ounces       City      State 
-##          5          0          0          0</code></pre>
+<pre><code>## Brewery_ID    Brewery    Beer_ID       Beer        ABV        IBU      Style     Ounces       City      State 
+##          0          0          0          0         62       1005          5          0          0          0</code></pre>
 <pre class="r"><code>#Missing values are found for IBU (1005), ABV (62) and Style (5). It is a significant number for IBU (41.7%), notable for ABV (2.57%) but insignificant for Style (0.2%), so, I decided to exclude the missing &#39;Style&#39; data (5 rows) from Budweiser.</code></pre>
 <pre class="r"><code>#Excluding missing data for &#39;Style&#39;
 Budweiser = Budweiser %&gt;% filter(!is.na(Style))
 sapply(Budweiser, function(x) sum(is.na(x)))</code></pre>
-<pre><code>## Brewery_ID    Brewery    Beer_ID       Beer        ABV        IBU 
-##          0          0          0          0         59       1002 
-##      Style     Ounces       City      State 
-##          0          0          0          0</code></pre>
+<pre><code>## Brewery_ID    Brewery    Beer_ID       Beer        ABV        IBU      Style     Ounces       City      State 
+##          0          0          0          0         59       1002          0          0          0          0</code></pre>
 <pre class="r"><code>#After excluding 5 rows of missing &#39;Style&#39; data, I notice that missing IBU and ABV are 1002 and 59 respectively as compared to 1005 and 62 earlier.</code></pre>
 <pre class="r"><code>#Assumption is that missing values of ABV and IBU are Missing At Random (MAR). Applying multiple imputation with function MICE() for ABV and IBU with covariant &#39;Style&#39;.
 
@@ -544,14 +531,11 @@ Budweiser$IBU = mice_complete1$IBU
 Budweiser$ABV = mice_complete2$ABV</code></pre>
 <pre class="r"><code>#Looking for missing values in dataset after imputation, none found
 gg_miss_var(Budweiser) + labs(title = &#39;Missing Values&#39;, x = &#39;Dataset Columns&#39;)</code></pre>
-<pre><code>## Warning: It is deprecated to specify `guide = FALSE` to remove a guide.
-## Please use `guide = &quot;none&quot;` instead.</code></pre>
+<pre><code>## Warning: It is deprecated to specify `guide = FALSE` to remove a guide. Please use `guide = &quot;none&quot;` instead.</code></pre>
 <p><img src="Unit_8_Case_Study_01_Final_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <pre class="r"><code>sapply(Budweiser, function(x) sum(is.na(x)))</code></pre>
-<pre><code>## Brewery_ID    Brewery    Beer_ID       Beer        ABV        IBU 
-##          0          0          0          0          0          0 
-##      Style     Ounces       City      State 
-##          0          0          0          0</code></pre>
+<pre><code>## Brewery_ID    Brewery    Beer_ID       Beer        ABV        IBU      Style     Ounces       City      State 
+##          0          0          0          0          0          0          0          0          0          0</code></pre>
 <pre class="r"><code>#With these imputed values, dataset is now complete with no more missing values.</code></pre>
 <p>##4. Median alcohol content and international bitterness unit for each state. Bar chart plots to compare.</p>
 <pre class="r"><code>#Median acohol content and international bitterness unit for each state
@@ -561,55 +545,55 @@ Budweiser %&gt;% group_by(State) %&gt;% summarize(medianABV = median(ABV), media
 ##    &lt;fct&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;int&gt;
 ##  1 AK       0.056       40      25
 ##  2 AL       0.06        39.5    10
-##  3 AR       0.052       29       5
-##  4 AZ       0.0565      25      46
-##  5 CA       0.058       40     183
+##  3 AR       0.052       35       5
+##  4 AZ       0.056       21      46
+##  5 CA       0.058       37     183
 ##  6 CO       0.06        35     263
-##  7 CT       0.06        40      27
-##  8 DC       0.0625      25.5     8
-##  9 DE       0.05        63       2
-## 10 FL       0.0555      38      58
-## 11 GA       0.055       35.5    16
-## 12 HI       0.054       23      27
+##  7 CT       0.06        35      27
+##  8 DC       0.0625      26       8
+##  9 DE       0.062       61       2
+## 10 FL       0.0565      37      58
+## 11 GA       0.055       38.5    16
+## 12 HI       0.054       22      27
 ## 13 IA       0.0555      25.5    30
-## 14 ID       0.0565      35      30
-## 15 IL       0.058       35      91
-## 16 IN       0.058       35     139
-## 17 KS       0.05        20      23
-## 18 KY       0.06        38      21
+## 14 ID       0.0565      36      30
+## 15 IL       0.058       37      91
+## 16 IN       0.06        33     139
+## 17 KS       0.05        22      23
+## 18 KY       0.06        32      21
 ## 19 LA       0.052       28      19
 ## 20 MA       0.054       30      82
-## 21 MD       0.058       36      21
-## 22 ME       0.051       30      27
-## 23 MI       0.062       30     162
-## 24 MN       0.056       44      55
+## 21 MD       0.058       35      21
+## 22 ME       0.051       35      27
+## 23 MI       0.0605      27.5   162
+## 24 MN       0.056       45      55
 ## 25 MO       0.052       28      42
 ## 26 MS       0.058       45      11
 ## 27 MT       0.0545      35      40
 ## 28 NC       0.057       30      59
 ## 29 ND       0.05        32       3
-## 30 NE       0.055       30      25
-## 31 NH       0.055       22.5     8
+## 30 NE       0.056       37      25
+## 31 NH       0.055       25       8
 ## 32 NJ       0.046       34.5     8
-## 33 NM       0.061       52      14
-## 34 NV       0.061       42      11
-## 35 NY       0.055       40      74
+## 33 NM       0.061       50.5    14
+## 34 NV       0.058       40      11
+## 35 NY       0.055       35      74
 ## 36 OH       0.058       40      49
-## 37 OK       0.06        35      19
-## 38 OR       0.056       35     125
-## 39 PA       0.0575      29     100
-## 40 RI       0.055       27      27
-## 41 SC       0.055       35.5    14
-## 42 SD       0.06        30       7
+## 37 OK       0.06        27      19
+## 38 OR       0.056       32     125
+## 39 PA       0.057       30     100
+## 40 RI       0.055       24      27
+## 41 SC       0.055       36      14
+## 42 SD       0.06        21       7
 ## 43 TN       0.057       34.5     6
-## 44 TX       0.055       33     128
-## 45 UT       0.04        32      26
+## 44 TX       0.056       34     128
+## 45 UT       0.04        35      26
 ## 46 VA       0.0565      41      40
 ## 47 VT       0.055       42      27
 ## 48 WA       0.0555      35      68
-## 49 WI       0.052       22      87
+## 49 WI       0.052       24      87
 ## 50 WV       0.062       57.5     2
-## 51 WY       0.05        25      15</code></pre>
+## 51 WY       0.05        26      15</code></pre>
 <pre class="r"><code>##Plot a bar chart for median ABV for each State
 #Arrange (order) data by descending median ABV
 Budweiser_ABV = Budweiser %&gt;% group_by(State) %&gt;% summarize(medianABV = median(ABV), medianIBU = median(IBU), Count = n()) %&gt;% arrange(desc(medianABV))
@@ -638,7 +622,8 @@ Budweiser %&gt;% select(State, ABV) %&gt;% filter(ABV == max(Budweiser$ABV))</co
 <pre class="r"><code>#State with most bitter (IBU) beer
 Budweiser %&gt;% select(State, IBU) %&gt;% filter(IBU == max(Budweiser$IBU))</code></pre>
 <pre><code>##   State IBU
-## 1    OR 138</code></pre>
+## 1    IL 138
+## 2    OR 138</code></pre>
 <pre class="r"><code>#Plot the states on US map
 US_states &lt;- map_data(&quot;state&quot;)
 colorado = US_states %&gt;% filter(region == &quot;colorado&quot;)
@@ -656,7 +641,7 @@ ggplot() +
 <pre class="r"><code>#Summary statistics for ABV
 summary(Budweiser$ABV)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-## 0.00100 0.05000 0.05600 0.05972 0.06700 0.12800</code></pre>
+## 0.00100 0.05000 0.05600 0.05974 0.06700 0.12800</code></pre>
 <pre class="r"><code>#The lowest ABV is 0.1%, the highest is 12.8%. The Mean is 5.98% and the Median value is 5.6%.</code></pre>
 <pre class="r"><code>#Plot to visualize the distribution
 Budweiser %&gt;% ggplot(aes(x = ABV)) + geom_histogram(bins = 50, fill = &quot;orange&quot;) + labs(title = &#39;AVB Distribution&#39;, x = &#39;Alcohol by Volume (ABV)&#39;, y = &quot;Count of Beers&quot;) + geom_vline(xintercept = median(Budweiser$ABV), color =&quot;lightsteelblue&quot;, size = 2) + geom_vline(xintercept = mean(Budweiser$ABV), color = &quot;black&quot;, linetype = &quot;dotted&quot;, size = 1)</code></pre>
@@ -724,14 +709,14 @@ ggplot(Ale_ggp, aes(x, y, col = Statistic)) + geom_line() + labs(title = &#39;St
 <pre class="r"><code>#Find the k-value with maximum accuracy level
 Ale_Stat[which.max(Ale_Stat$accuracy),]</code></pre>
 <pre><code>##    accuracy sensitivity specificity positive_class k
-## 6 0.8956522   0.8571429   0.9192982            IPA 6</code></pre>
+## 5 0.8978261   0.8971429   0.8982456            IPA 5</code></pre>
 <pre class="r"><code>#Mean Statistical values for k-values from 1 to 30
 mean(Ale_Stat$accuracy)</code></pre>
-<pre><code>## [1] 0.8716667</code></pre>
+<pre><code>## [1] 0.8852174</code></pre>
 <pre class="r"><code>mean(Ale_Stat$sensitivity)</code></pre>
-<pre><code>## [1] 0.816381</code></pre>
+<pre><code>## [1] 0.8657143</code></pre>
 <pre class="r"><code>mean(Ale_Stat$specificity)</code></pre>
-<pre><code>## [1] 0.905614</code></pre>
+<pre><code>## [1] 0.897193</code></pre>
 <pre class="r"><code>#Based on ABV and IBU for the beers in this dataset, the Machine Learning k-NN Classification model classifies a beer with about 87% accuracy whether it&#39;s an IPA or other type of beer. The best k-value is 7 with highest accuracy of 89%, positive class as IPA.
 
   classifications = knn(train[,c(5,6)],test[,c(5,6)],train$Style_Ale,prob = TRUE, k = 15)
@@ -741,28 +726,28 @@ mean(Ale_Stat$accuracy)</code></pre>
 ## 
 ##                
 ## classifications IPA Other Ales
-##      IPA        142         22
-##      Other Ales  33        263
-##                                           
-##                Accuracy : 0.8804          
-##                  95% CI : (0.8472, 0.9086)
-##     No Information Rate : 0.6196          
-##     P-Value [Acc &gt; NIR] : &lt;2e-16          
-##                                           
-##                   Kappa : 0.7433          
-##                                           
-##  Mcnemar&#39;s Test P-Value : 0.1775          
-##                                           
-##             Sensitivity : 0.8114          
-##             Specificity : 0.9228          
-##          Pos Pred Value : 0.8659          
-##          Neg Pred Value : 0.8885          
-##              Prevalence : 0.3804          
-##          Detection Rate : 0.3087          
-##    Detection Prevalence : 0.3565          
-##       Balanced Accuracy : 0.8671          
-##                                           
-##        &#39;Positive&#39; Class : IPA             
+##      IPA        150         23
+##      Other Ales  25        262
+##                                          
+##                Accuracy : 0.8957         
+##                  95% CI : (0.864, 0.9221)
+##     No Information Rate : 0.6196         
+##     P-Value [Acc &gt; NIR] : &lt;2e-16         
+##                                          
+##                   Kappa : 0.7782         
+##                                          
+##  Mcnemar&#39;s Test P-Value : 0.8852         
+##                                          
+##             Sensitivity : 0.8571         
+##             Specificity : 0.9193         
+##          Pos Pred Value : 0.8671         
+##          Neg Pred Value : 0.9129         
+##              Prevalence : 0.3804         
+##          Detection Rate : 0.3261         
+##    Detection Prevalence : 0.3761         
+##       Balanced Accuracy : 0.8882         
+##                                          
+##        &#39;Positive&#39; Class : IPA            
 ## </code></pre>
 <p>#Naive Bayes</p>
 <pre class="r"><code>#naiveBayes()
@@ -773,26 +758,26 @@ CM</code></pre>
 ## 
 ##             
 ##              IPA Other Ales
-##   IPA        133         29
-##   Other Ales  42        256
+##   IPA        146         29
+##   Other Ales  29        256
 ##                                           
-##                Accuracy : 0.8457          
-##                  95% CI : (0.8093, 0.8774)
+##                Accuracy : 0.8739          
+##                  95% CI : (0.8401, 0.9028)
 ##     No Information Rate : 0.6196          
 ##     P-Value [Acc &gt; NIR] : &lt;2e-16          
 ##                                           
-##                   Kappa : 0.6678          
+##                   Kappa : 0.7325          
 ##                                           
-##  Mcnemar&#39;s Test P-Value : 0.1544          
+##  Mcnemar&#39;s Test P-Value : 1               
 ##                                           
-##             Sensitivity : 0.7600          
+##             Sensitivity : 0.8343          
 ##             Specificity : 0.8982          
-##          Pos Pred Value : 0.8210          
-##          Neg Pred Value : 0.8591          
+##          Pos Pred Value : 0.8343          
+##          Neg Pred Value : 0.8982          
 ##              Prevalence : 0.3804          
-##          Detection Rate : 0.2891          
-##    Detection Prevalence : 0.3522          
-##       Balanced Accuracy : 0.8291          
+##          Detection Rate : 0.3174          
+##    Detection Prevalence : 0.3804          
+##       Balanced Accuracy : 0.8663          
 ##                                           
 ##        &#39;Positive&#39; Class : IPA             
 ## </code></pre>

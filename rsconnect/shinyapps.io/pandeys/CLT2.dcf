@@ -1,0 +1,14 @@
+name: CLT2
+title: CLT2
+username:
+account: pandeys
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5086158
+bundleId: 5234642
+url: https://pandeys.shinyapps.io/CLT2/
+when: 1636515721.0151
+lastSyncTime: 1636515721.0151
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: _site.yml|Beers.csv|CLT2.html|CLT2.Rmd|Credit Default.csv|index.html|index.Rmd|Introduction.html|Introduction.Rmd|README.md|Unit_8_Case_Study_01_Final.html|Unit_8_Case_Study_01_Final.Rmd|_site|figure-html|Unit_8_Case_Study_01_Final_files

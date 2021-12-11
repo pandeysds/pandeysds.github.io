@@ -468,28 +468,28 @@ ggplot(NB.df, aes(x=TestNumber, y=Value, linetype=Test, colors=Test)) +
 
 ### k-NN Models
 ```{r}
-kNNsplitPerc <- .7
+#kNNsplitPerc <- .7
 
 # Create dataframe for k-NN model 
-knn.df <- employee.df
+#knn.df <- employee.df
 
 # Create standardized variables
-knn.df$z_Age = scale(knn.df$Age)
-knn.df$z_YearsSinceLastPromotion = scale(knn.df$YearsSinceLastPromotion)
+#knn.df$z_Age = scale(knn.df$Age)
+#knn.df$z_YearsSinceLastPromotion = scale(knn.df$YearsSinceLastPromotion)
 
-kNNtrainIndices <- sample(1:dim(knn.df)[1],round(kNNsplitPerc * dim(knn.df)[1]))
-kNNdfTrain <- knn.df[kNNtrainIndices,]
-kNNdfTest <- knn.df[-kNNtrainIndices,]
+#kNNtrainIndices <- sample(1:dim(knn.df)[1],round(kNNsplitPerc * dim(knn.df)[1]))
+#kNNdfTrain <- knn.df[kNNtrainIndices,]
+#kNNdfTest <- knn.df[-kNNtrainIndices,]
 
 # Internal Model
-classifications <- knn.cv(knn.df[,c(37,38)],knn.df$Attrition, k = 20)
-confusionMatrix(table(classifications,knn.df$Attrition))
+#classifications <- knn.cv(knn.df[,c(37,38)],knn.df$Attrition, k = 20)
+#confusionMatrix(table(classifications,knn.df$Attrition))
 
 # External Model
-classifications1 <- knn(kNNdfTrain[,c(37,38)], kNNdfTest[,c(37,38)], kNNdfTrain$Attrition, 
-                       prob = TRUE, k = 10)
+#classifications1 <- knn(kNNdfTrain[,c(37,38)], kNNdfTest[,c(37,38)], kNNdfTrain$Attrition, 
+#                       prob = TRUE, k = 10)
 
-confusionMatrix(table(classifications1,kNNdfTest$Attrition))
+#confusionMatrix(table(classifications1,kNNdfTest$Attrition))
 ```
 
 
@@ -540,9 +540,9 @@ NoSalary %>% ggplot(aes(x = Age, y = Salary)) +
   geom_point(color = "darkslateblue") + 
   ggtitle("Predicted Salary by Age") +
   ylab("Salary") + 
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) 
 
-Salary.Classify = NoSalary %>% select("ID", "Salary") %>% arrange(ID)
+#Salary.Classify = NoSalary %>% select("ID", "Salary") %>% arrange(ID)
 
 #write.csv(Salary.Classify, file = "Case2PredictionsBoyd_Pandey Salary.csv", row.names=FALSE)
 ```
